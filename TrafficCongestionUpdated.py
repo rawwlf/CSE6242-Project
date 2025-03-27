@@ -1,3 +1,4 @@
+# THIS WAS THE INITIAL FILE DONE ON Tuesday 25th, use the IPYNB FILE!
 import pandas as pd
 import osmnx as ox
 import networkx as nx
