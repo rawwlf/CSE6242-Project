@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traffic Congestion Map</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
+        <div class="navigation">
+            <a href="/" class="nav-link">Congestion Map</a>
+            <a href="/route" class="nav-link">Route Planner</a>
+        </div>
         <div class="year-selector">
             <form method="GET" action="/">
                 <label for="year">Select Year:</label>

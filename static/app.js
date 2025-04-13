@@ -209,8 +209,8 @@ document.getElementById('calculate-route').addEventListener('click', function() 
     button.disabled = true;
     button.textContent = 'Calculating...';
 
-//************************************* NEED TO UPDATE WITH ROUTING CALCULATOR **************************************
-
+    //************************************* NEED TO UPDATE WITH ROUTING CALCULATOR **************************************
+    
     // Calculate route (We would need to add connection to our route calculator)
     calculateSampleRoute(start, end, weather, time, date)
         .then(routeData => {
@@ -224,5 +224,5 @@ document.getElementById('calculate-route').addEventListener('click', function() 
             button.disabled = false;
             button.textContent = 'Calculate Route';
         });
-//******************************************************* END ******************************************************
+        //******************************************************* END ******************************************************
 });

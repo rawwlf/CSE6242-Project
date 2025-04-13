@@ -62,11 +62,16 @@ def create_map(year):
 # Flask routes
 @app.route('/')
 def index():
-    year = int(request.args.get('year', 2022))  # Default to 2020 if no year is provided
+    year = int(request.args.get('year', 2022))  # Default to 2022 if no year is provided
     years = sorted(state_year_data['Start_Year'].unique())
     m = create_map(year)
     map_html = m._repr_html_()
     return render_template('index.html', map_html=map_html, years=years, selected_year=year)
+
+# New route for the Traffic Flow Optimization page
+@app.route('/route')
+def route_map():
+    return render_template('map.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
