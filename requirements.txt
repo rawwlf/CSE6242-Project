@@ -1,0 +1,13 @@
+# Flask and web framework
+flask
+
+# Data handling
+pandas
+
+# Mapping and visualization
+folium
+
+# AWS integration
+boto3
+botocore
+s3fs

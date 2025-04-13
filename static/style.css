@@ -6,8 +6,20 @@ html, body{
 }
 
 .year-selector {
-    margin: 20px;
-}
+        position: absolute;
+        top: 10px;
+        left: 60px;
+        z-index: 900;
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    
+    .map-container {
+        height: 100%;
+        width: 100%;
+    }
 
 .container .map-container .folium-map{
     height: 100%;

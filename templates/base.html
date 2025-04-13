@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Traffic Analysis System{% endblock %}</title>
+    
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block additional_css %}{% endblock %}
+    
+    <style>
+        /* Quick fixes that might be needed across all pages */
+        .navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .site-title {
+            font-size: 1.5rem;
+            margin: 0;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-link:hover {
+            background-color: #555;
+        }
+        
+        .nav-link.active {
+            background-color: #4CAF50;
+        }
+        
+        .main-content {
+            padding-top: 60px; /* Make room for fixed navbar */
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+        
+        /* Additional utility classes */
+        .full-height {
+            height: 100%;
+        }
+        
+        .full-width {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <a href="/" class="site-title">Traffic Congestion Analysis</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Congestion Map</a>
+                <a href="/route" class="nav-link {% if request.path == '/route' %}active{% endif %}">Route Planner</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Common JavaScript -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,98 @@
+/* Reset and common styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Common form styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button, .button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover, .button:hover {
+    background-color: #45a049;
+}
+
+/* Card styling */
+.card {
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Panel styling */
+.panel {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+/* Responsive container */
+.container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Control panel styling */
+.control-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 900;
+    width: 300px;
+}
