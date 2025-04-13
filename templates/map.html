@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Traffic Flow Optimization{% endblock %}
+
+{% block additional_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<!-- Leaflet plugins CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+<link rel="stylesheet" href="{{ url_for('static', filename='map_style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="map"></div>
+
+<div id="control-panel" class="panel">
+    <h2>Directions</h2>
+
+    <div class="form-group">
+        <label for="start-input">Start Location:</label>
+        <input type="text" id="start-input" placeholder="e.g., Times Square">
+    </div>
+
+    <div class="form-group">
+        <label for="end-input">End Location:</label>
+        <input type="text" id="end-input" placeholder="e.g., Central Park">
+    </div>
+
+    <div class="form-group">
+        <label for="weather-select">Weather Condition:</label>
+        <select id="weather-select">
+            <option value="clear">Clear</option>
+            <option value="rain">Rain</option>
+            <option value="snow">Snow</option>
+            <option value="fog">Fog</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="time-select">Depart at:</label>
+        <input type="date" id="date-select" class="datetime-input">
+        <input type="time" id="time-select" value="08:00">
+    </div>
+
+    <button id="calculate-route">Calculate Route</button>
+
+    <div id="route-info" class="route-info" style="display: none;">
+        <h3>Route Summary</h3>
+        <p><strong>Distance:</strong> <span id="distance">-</span> miles</p>
+        <p><strong>Duration:</strong> <span id="duration">-</span> minutes</p>
+        <p><strong>Weather Impact:</strong> <span id="weather-impact">-</span>%</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<!-- Leaflet plugins -->
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endblock %}

@@ -1,28 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Congestion Map</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="year-selector">
-            <form method="GET" action="/">
-                <label for="year">Select Year:</label>
-                <select name="year" id="year" onchange="this.form.submit()">
-                    {% for year in years %}
-                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
-                        {{ year }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
-        <div class="map-container">
-            {{ map_html | safe }}
-        </div>
+{% extends "base.html" %}
+
+{% block title %}Traffic Congestion Map{% endblock %}
+
+{% block additional_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container full-height">
+    <div class="year-selector panel">
+        <form method="GET" action="/">
+            <label for="year">Select Year:</label>
+            <select name="year" id="year" onchange="this.form.submit()">
+                {% for year in years %}
+                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                    {{ year }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
-</body>
-</html>
+    <div class="map-container">
+        {{ map_html | safe }}
+    </div>
+</div>
+{% endblock %}

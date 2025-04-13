@@ -9,16 +9,18 @@ from botocore.config import Config
 
 app = Flask(__name__)
 
+# Configure data loading
 bucket_name = 'cse6242-project-team81'
-state_year_data = pd.read_csv(f's3://{bucket_name}/state_year_data.csv')
-location_counts = pd.read_csv(f's3://{bucket_name}/filtered_location_counts.csv')
+try:
+    state_year_data = pd.read_csv(f's3://{bucket_name}/state_year_data.csv')
+    location_counts = pd.read_csv(f's3://{bucket_name}/filtered_location_counts.csv')
 
-s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-
-response = s3.get_object(Bucket=bucket_name, Key='us-states.json')
-json_data = response['Body'].read().decode('utf-8')
-
-us_states = json.loads(json_data)
+    s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+    response = s3.get_object(Bucket=bucket_name, Key='us-states.json')
+    json_data = response['Body'].read().decode('utf-8')
+    us_states = json.loads(json_data)
+except Exception as e:
+    print(f"Error loading data: {e}")
 
 # Function to create the map
 def create_map(year):
@@ -62,11 +64,19 @@ def create_map(year):
 # Flask routes
 @app.route('/')
 def index():
-    year = int(request.args.get('year', 2022))  # Default to 2020 if no year is provided
+    year = int(request.args.get('year', 2022))  # Default to 2022 if no year is provided
     years = sorted(state_year_data['Start_Year'].unique())
     m = create_map(year)
     map_html = m._repr_html_()
-    return render_template('index.html', map_html=map_html, years=years, selected_year=year)
+    return render_template('index.html', 
+                          map_html=map_html, 
+                          years=years, 
+                          selected_year=year)
+
+# Route for the Traffic Flow Optimization page
+@app.route('/route')
+def route_map():
+    return render_template('map.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

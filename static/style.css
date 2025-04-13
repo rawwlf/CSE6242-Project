@@ -6,9 +6,46 @@ html, body{
 }
 
 .year-selector {
-    margin: 20px;
-}
+        position: absolute;
+        top: 10px;
+        left: 60px;
+        z-index: 900;
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    
+    .map-container {
+        height: 100%;
+        width: 100%;
+    }
 
 .container .map-container .folium-map{
     height: 100%;
+}
+
+.navigation {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.nav-link {
+    display: inline-block;
+    margin-right: 15px;
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    background-color: #45a049;
 }
