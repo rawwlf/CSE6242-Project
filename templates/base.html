@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-mode">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Traffic Analysis System{% endblock %}</title>
+    <title>{% block title %}NYC Traffic Prediction{% endblock %}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Common CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
@@ -18,11 +27,11 @@
             top: 0;
             left: 0;
             right: 0;
-            background: #333;
-            color: white;
-            padding: 10px 20px;
+            background: #1B1B1B;
+            color: #F0F0F0;
+            padding: 15px 20px;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
         
         .nav-container {
@@ -36,29 +45,59 @@
         .site-title {
             font-size: 1.5rem;
             margin: 0;
-            color: white;
+            color: #FFCC00;
             text-decoration: none;
+            font-weight: 600;
         }
         
         .nav-links {
             display: flex;
             gap: 20px;
+            align-items: center;
         }
         
         .nav-link {
-            color: white;
+            color: #F0F0F0;
             text-decoration: none;
             padding: 8px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: background-color 0.3s;
         }
         
         .nav-link:hover {
-            background-color: #555;
+            background-color: #333333;
         }
         
         .nav-link.active {
-            background-color: #4CAF50;
+            background-color: #FFCC00;
+            color: #1B1B1B;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--accent-color);
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+            width: 40px;
+            height: 40px;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--accent-color);
+            color: var(--button-text);
+            transform: scale(1.05);
+        }
+        
+        .light-icon, .dark-icon {
+            font-size: 20px;
         }
         
         .main-content {
@@ -83,8 +122,10 @@
         <div class="nav-container">
             <a href="/" class="site-title">Traffic Congestion Analysis</a>
             <div class="nav-links">
-                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Congestion Map</a>
-                <a href="/route" class="nav-link {% if request.path == '/route' %}active{% endif %}">Route Planner</a>
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <i class="fas fa-sun light-icon"></i>
+                    <i class="fas fa-moon dark-icon"></i>
+                </button>
             </div>
         </div>
     </nav>
@@ -95,6 +136,41 @@
     </div>
     
     <!-- Common JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'light') {
+                htmlElement.classList.add('light-mode');
+            } else if (savedTheme === 'dark') {
+                htmlElement.classList.remove('light-mode');
+            } else if (prefersDark) {
+                htmlElement.classList.remove('light-mode');
+            } else {
+                htmlElement.classList.add('light-mode');
+            }
+            
+            // Toggle theme when button is clicked
+            themeToggle.addEventListener('click', function() {
+                htmlElement.classList.toggle('light-mode');
+                
+                // Save preference to localStorage
+                if (htmlElement.classList.contains('light-mode')) {
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                }
+                
+                // Dispatch custom event for other scripts to listen for
+                window.dispatchEvent(new Event('themechange'));
+            });
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

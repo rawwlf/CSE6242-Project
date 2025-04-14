@@ -1,27 +1,109 @@
 {% extends "base.html" %}
 
-{% block title %}Traffic Congestion Map{% endblock %}
+{% block title %}NYC Traffic Congestion Prediction{% endblock %}
 
 {% block additional_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+    /* Moving most styles to style.css and using variables instead */
+    .container {
+        display: flex;
+        height: 100vh;
+    }
+    #map {
+        flex: 1;
+        height: 100%;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container full-height">
-    <div class="year-selector panel">
-        <form method="GET" action="/">
-            <label for="year">Select Year:</label>
-            <select name="year" id="year" onchange="this.form.submit()">
-                {% for year in years %}
-                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
-                    {{ year }}
-                </option>
-                {% endfor %}
+<div class="container">
+    <div id="map"></div>
+    
+    <div id="control-panel" class="control-panel">
+        <h2>NYC Traffic Prediction</h2>
+        
+        <div class="form-group">
+            <label for="start-location">Start Location:</label>
+            <input type="text" id="start-location" placeholder="Enter start address">
+        </div>
+        
+        <div class="form-group">
+            <label for="end-location">End Location:</label>
+            <input type="text" id="end-location" placeholder="Enter destination address">
+        </div>
+        
+        <div class="form-group">
+            <label for="travel-time">Travel Time:</label>
+            <select id="travel-time">
+                <option value="now">Now</option>
+                <option value="morning_rush">Morning Rush (8-9 AM)</option>
+                <option value="evening_rush">Evening Rush (5-6 PM)</option>
+                <option value="weekend">Weekend</option>
             </select>
-        </form>
-    </div>
-    <div class="map-container">
-        {{ map_html | safe }}
+        </div>
+        
+        <button id="find-route" class="btn primary-btn">Find Route</button>
+        
+        <div class="loader" id="loading-spinner"></div>
+        
+        <div class="route-info" id="route-details" style="display: none;">
+            <h3>Route Details</h3>
+            
+            <div class="detail-item">
+                <div class="detail-label">Distance:</div>
+                <div id="route-distance">--</div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-label">Estimated Travel Time:</div>
+                <div id="travel-time-value">--</div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-label">Average Congestion:</div>
+                <div id="avg-congestion">--</div>
+            </div>
+            
+            <div class="detail-item">
+                <div class="detail-label">Weather Impact:</div>
+                <div id="weather-impact">--</div>
+            </div>
+        </div>
+        
+        <div class="congestion-legend">
+            <h4>Congestion Legend</h4>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgba(0, 255, 0, 0.7);"></div>
+                <span>Low (< 0.3)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgba(255, 255, 0, 0.7);"></div>
+                <span>Medium (0.3 - 0.6)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: rgba(255, 0, 0, 0.7);"></div>
+                <span>High (> 0.6)</span>
+            </div>
+        </div>
     </div>
 </div>
+
+<nav class="navbar">
+    <div class="navbar-brand">
+        <h1>NYC Traffic Prediction</h1>
+    </div>
+    <div class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">About</a>
+        <button id="theme-toggle" class="theme-toggle">☀️</button>
+    </div>
+</nav>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 {% endblock %}
