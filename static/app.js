@@ -1,228 +1,436 @@
-// Initialize the map
-const map = L.map('map').setView([40.7128, -74.0060], 12); //Fixed to NYC Coordinates
+// Global variables for map
+let map;
+let routeLayer;
+let heatLayer;
+let legend;
+let lastRouteData;
+let lastWeatherData;
+let startMarker, endMarker, routeLine;
+let startLoc, endLoc;
 
-// Add base layers
-const lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-}).addTo(map);
+// Base layers
+let lightLayer, darkLayer, streetLayer;
+let baseLayers;
 
-const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-});
+// Theme colors
+let currentTheme = 'dark'; // Default theme
 
-const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
-});
-
-// Initialize layer groups
-const routeLayer = L.layerGroup().addTo(map);
-let startMarker = null;
-let endMarker = null;
-let heatLayer = null;
-
-// Add layer control
-const baseLayers = {
-    "Light Mode": lightLayer,
-    "Dark Mode": darkLayer,
-    "Street Map": streetLayer
-};
-
-L.control.layers(baseLayers, null, {position: 'topleft'}).addTo(map);
-
-// Legend for traffic congestion heatmap
-const legend = L.control({position: 'bottomright'});
-legend.onAdd = function(map) {
-    const div = L.DomUtil.create('div', 'legend');
-    div.innerHTML = `
-        <h4>Traffic Congestion</h4>
-        <div style="background: linear-gradient(to right, blue, lime, yellow, red); height: 20px; margin-bottom: 5px;"></div>
-        <span>Low</span>
-        <span style="float: right;">High</span>
-    `;
-    return div;
-};
-legend.addTo(map);
-
-//************************************* NEED TO UPDATE WITH ROUTING ALGORITHM *************************************
-
-// Function to calculate a sample route (this is a placeholder used to create a route for display)
-function calculateSampleRoute(start, end, weather, time, date) {
-
-    return new Promise((resolve) => {
-
-        // Generate sample route data around NYC
-        const startPoint = [40.7580, -73.9855]; // Times Square
-        const endPoint = [40.7829, -73.9654];   // Central Park
-
-        // Create a winding route
-        const routeCoords = [
-            startPoint,
-            [40.7600, -73.9800],
-            [40.7650, -73.9750],
-            [40.7700, -73.9700],
-            [40.7750, -73.9680],
-            [40.7800, -73.9670],
-            endPoint
-        ];
-
-        // Create GeoJSON LineString
-        const routeGeoJSON = {
-            type: "Feature",
-            properties: {
-                distance: (Math.random() * 2 + 1.5).toFixed(1),
-                duration: (Math.random() * 10 + 15).toFixed(0),
-                weatherImpact: weather === 'clear' ? 0 : (weather === 'rain' ? 25 : weather === 'snow' ? 40 : 15)
-            },
-            geometry: {
-                type: "LineString",
-                coordinates: routeCoords.map(coord => [coord[1], coord[0]])
-            }
-        };
-
-        // Generate random coordinates with traffic congestion severity
-        const trafficSeverity = [];
-        for (let i = 0; i < routeCoords.length - 1; i++) {
-            const steps = 50;
-            for (let j = 0; j < steps; j++) {
-                const lat = routeCoords[i][0] + (routeCoords[i+1][0] - routeCoords[i][0]) * (Math.random() * 10);
-                const lng = routeCoords[i][1] + (routeCoords[i+1][1] - routeCoords[i][1]) * (Math.random() * 10);
-                const severity = 0.2 + (Math.random() * 0.6);
-                trafficSeverity.push([lat, lng, severity]);
-            }
-        }
-
-        resolve({
-            route: routeGeoJSON,
-            trafficSeverity: trafficSeverity,
-            start: startPoint,
-            end: endPoint
-        });
-    });
-}
-//******************************************************* END ******************************************************
-
-// Function to display the route on the map
-function displayRoute(routeData, weather) {
-
-    // Add new route
-    const routeLine = L.geoJSON(routeData.route, {
-        style: getRouteStyle(weather),
-        onEachFeature: function(feature, layer) {
-            layer.bindPopup(`
-                <b>Route Information</b><br>
-                Distance: ${feature.properties.distance} miles<br>
-                Estimated duration: ${feature.properties.duration} min<br>
-                Weather impact: ${feature.properties.weatherImpact}%
-            `);
-        }
-    }).addTo(routeLayer);
-
-    // Add start and end markers
-    if (startMarker) map.removeLayer(startMarker);
-    if (endMarker) map.removeLayer(endMarker);
-
-    // Create custom pinpoint icons
-    const startPinIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        shadowSize: [41, 41]
-    });
-
-    const endPinIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        shadowSize: [41, 41]
-    });
-
-    // Add new pinpoint markers
-    startMarker = L.marker(routeData.start, {
-        icon: startPinIcon
-    }).addTo(map).bindPopup(`
-        <b>Start Point</b><br>
-        ${document.getElementById('start-input').value}
-    `);
-
-    endMarker = L.marker(routeData.end, {
-        icon: endPinIcon
-    }).addTo(map).bindPopup(`
-        <b>End Point</b><br>
-        ${document.getElementById('end-input').value}
-    `);
-
-    // Add traffic congestion layer
-    if (heatLayer) map.removeLayer(heatLayer);
-    heatLayer = L.heatLayer(routeData.trafficSeverity, {
-        radius: 25,
-        blur: 15,
-        maxZoom: 17,
-        gradient: {0.2: 'blue', 0.4: 'lime', 0.6: 'yellow', 1: 'red'}
-    }).addTo(map);
-
-
-    // Update route info panel
-    document.getElementById('distance').textContent = routeData.route.properties.distance;
-    document.getElementById('duration').textContent = routeData.route.properties.duration;
-    document.getElementById('weather-impact').textContent = routeData.route.properties.weatherImpact;
-    document.getElementById('route-info').style.display = 'block';
-
-    // Fit map to route bounds
-    map.fitBounds(routeLine.getBounds(), {padding: [50, 50]});
-}
-
-// Get style for route based on weather
-function getRouteStyle(weather) {
-    const styles = {
-        clear: {color: '#1E90FF', weight: 6, opacity: 0.9},
-        rain: {color: '#4682B4', weight: 8, dashArray: '5, 5', opacity: 0.8},
-        snow: {color: '#B0E0E6', weight: 8, dashArray: '10, 10', opacity: 0.7},
-        fog: {color: '#A9A9A9', weight: 6, opacity: 0.6}
+function getThemeColors() {
+    return {
+        accent: currentTheme === 'dark' ? '#FFCC00' : '#10B981', 
+        low:    currentTheme === 'dark' ? '#FFEB3B' : '#10B981', 
+        medium: currentTheme === 'dark' ? '#FFC107' : '#059669', 
+        high:   currentTheme === 'dark' ? '#FF9800' : '#047857', 
+        severe: currentTheme === 'dark' ? '#FF5722' : '#065F46', 
+        background: currentTheme === 'dark' ? '#1e1e1e' : '#FFFFFF',
+        text: currentTheme === 'dark' ? '#FFFFFF' : '#333333'
     };
-    return styles[weather] || styles.clear;
 }
 
-// Event listener for calculate button
-document.getElementById('calculate-route').addEventListener('click', function() {
-    const start = document.getElementById('start-input').value;
-    const end = document.getElementById('end-input').value;
-    const weather = document.getElementById('weather-select').value;
-    const date = document.getElementById('date-select').value;
-    const time = document.getElementById('time-select').value;
+// Map initialization
+function initMap() {
+    routeLayer = L.layerGroup();
+    
+    map = L.map('map').setView([40.7128, -74.0060], 12);
 
-    if (!start || !end) {
-        alert('Please enter both start and end locations');
-        return;
+    lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 19
+    });
+
+    darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 19
+    });
+
+    streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    });
+
+    baseLayers = {
+        "Light": lightLayer,
+        "Dark": darkLayer,
+        "Street": streetLayer
+    };
+
+    applyTheme();
+    routeLayer.addTo(map);
+    L.control.layers(baseLayers).addTo(map);
+}
+
+// Theme handling
+function applyTheme() {
+    document.documentElement.className = currentTheme + '-mode';
+    updateMapBaseLayer();
+    
+    updateThemeColors();
+    
+    if (map && legend) {
+        updateMapLegend();
+    }
+    
+    if (lastRouteData && lastWeatherData) {
+        displayRoute(lastRouteData, lastWeatherData);
+    }
+    
+    if (heatLayer && map.hasLayer(heatLayer)) {
+        map.removeLayer(heatLayer);
+        if (lastRouteData) {
+            createHeatmapLayer(lastRouteData);
+        }
+    }
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    if (html.classList.contains('light-mode')) {
+        html.classList.remove('light-mode');
+        localStorage.setItem('theme', 'dark');
+        currentTheme = 'dark';
+        updateMapBaseLayer('dark');
+    } else {
+        html.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+        currentTheme = 'light';
+        updateMapBaseLayer('light');
+    }
+    
+    applyTheme();
+}
+
+function updateMapBaseLayer(theme) {
+    if (theme === 'light') {
+        if (map.hasLayer(darkLayer)) map.removeLayer(darkLayer);
+        if (!map.hasLayer(lightLayer)) map.addLayer(lightLayer);
+    } else {
+        if (map.hasLayer(lightLayer)) map.removeLayer(lightLayer);
+        if (!map.hasLayer(darkLayer)) map.addLayer(darkLayer);
+    }
+}
+
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'light' || (!savedTheme && !prefersDarkMode)) {
+        document.documentElement.classList.add('light-mode');
+        currentTheme = 'light';
+        updateMapBaseLayer('light');
+    } else {
+        document.documentElement.classList.remove('light-mode');
+        currentTheme = 'dark';
+        updateMapBaseLayer('dark');
+    }
+    
+    updateThemeColors();
+}
+
+function updateMapLegend() {
+    if (legend) {
+        map.removeControl(legend);
+        legend = null;
+    }
+}
+
+function setDefaultDate() {
+    const today = new Date();
+    const formattedDate = today.toISOString().slice(0, 10);
+    const dateSelect = document.getElementById('date-select');
+    if (dateSelect) {
+        dateSelect.value = formattedDate;
+    }
+}
+
+// App initialization
+document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    setDefaultDate();
+    initializeTheme();
+    
+    const calculateRouteBtn = document.getElementById('calculate-route');
+    if (calculateRouteBtn) {
+        calculateRouteBtn.addEventListener('click', calculateRoute);
+        calculateRouteBtn.style.backgroundColor = getThemeColors().accent;
+        calculateRouteBtn.style.color = currentTheme === 'dark' ? '#121212' : '#FFFFFF';
     }
 
-    // Show loading state
-    const button = this;
-    button.disabled = true;
-    button.textContent = 'Calculating...';
-
-    //************************************* NEED TO UPDATE WITH ROUTING CALCULATOR **************************************
-    
-    // Calculate route (We would need to add connection to our route calculator)
-    calculateSampleRoute(start, end, weather, time, date)
-        .then(routeData => {
-            displayRoute(routeData, weather);
-        })
-        .catch(error => {
-            console.error('Error calculating route:', error);
-            alert('Error calculating route. Please try again.');
-        })
-        .finally(() => {
-            button.disabled = false;
-            button.textContent = 'Calculate Route';
-        });
-        //******************************************************* END ******************************************************
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
 });
+
+// Route calculation
+function calculateRoute() {
+    const start = document.getElementById('start-input').value;
+    const end = document.getElementById('end-input').value;
+    const date = document.getElementById('date-select').value;
+    const time = document.getElementById('time-select').value;
+    
+    if (!start || !end) {
+        showError("Please enter both start and end locations");
+        return;
+    }
+    
+    showLoading();
+    
+    fetch('/api/route', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            start: start,
+            end: end,
+            date: date,
+            time: time
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            lastRouteData = data.route;
+            
+            // Get weather data to enhance the route display
+            getWeatherData()
+                .then(weatherData => {
+                    lastWeatherData = weatherData;
+                    displayRoute(data.route, weatherData);
+                })
+                .catch(error => {
+                    displayRoute(data.route, null);
+                });
+        } else {
+            showError(data.error || "Error calculating route");
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showError("Network error. Please try again.");
+        console.error("Error:", error);
+    });
+}
+
+// Marker creation
+function createMarkers(start, end) {
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+    
+    const colors = getThemeColors();
+    
+    // Create start icon (circular shape)
+    const startIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width: 20px; height: 20px; border-radius: 50%; background-color: ${colors.accent}; border: 3px solid #FFFFFF;"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+    
+    // Create end icon (diamond shape)
+    const endIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width: 20px; height: 20px; transform: rotate(45deg); background-color: ${colors.accent}; border: 3px solid #FFFFFF;"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+    
+    startMarker = L.marker(start, {icon: startIcon}).addTo(routeLayer);
+    endMarker = L.marker(end, {icon: endIcon}).addTo(routeLayer);
+    
+    startLoc = start;
+    endLoc = end;
+}
+
+// Route display
+function displayRoute(routeData, weatherData) {
+    clearMap();
+    
+    if (!routeData) return;
+    
+    const start = routeData.route_coords[0];
+    const end = routeData.route_coords[routeData.route_coords.length - 1];
+    
+    createMarkers(start, end);
+    createHeatmapLayer(routeData);
+    updateRouteInfo(routeData, weatherData);
+    
+    // Adjust map to fit the route
+    if (routeData.route_coords.length > 0) {
+        const bounds = L.latLngBounds(routeData.route_coords);
+        map.fitBounds(bounds, { padding: [50, 50] });
+    }
+}
+
+// Heatmap creation
+function createHeatmapLayer(routeData) {
+    if (heatLayer && map.hasLayer(heatLayer)) {
+        map.removeLayer(heatLayer);
+    }
+    
+    if (!routeData || !routeData.edges || routeData.edges.length === 0) return;
+    
+    const colors = getThemeColors();
+    const congestionSegments = routeData.edges;
+    
+    heatLayer = L.layerGroup();
+    
+    congestionSegments.forEach(segment => {
+        const congestionLevel = segment.congestion_level; // 0-1 scale
+        
+        let color;
+        if (congestionLevel < 0.25) {
+            color = colors.low;
+        } else if (congestionLevel < 0.5) {
+            color = colors.medium;
+        } else if (congestionLevel < 0.75) {
+            color = colors.high;
+        } else {
+            color = colors.severe;
+        }
+        
+        const line = L.polyline([segment.start, segment.end], {
+            color: color,
+            weight: 5,
+            opacity: 0.8
+        }).addTo(heatLayer);
+        
+        // Popup with congestion info
+        line.bindPopup(`<div class="popup-content">
+            <h3>Segment Info</h3>
+            <p>Distance: ${segment.distance.toFixed(2)} miles</p>
+            <p>Base travel time: ${segment.base_time.toFixed(1)} min</p>
+            <p>Actual travel time: ${segment.actual_time.toFixed(1)} min</p>
+            <p>Delay due to congestion: ${segment.congestion_impact.toFixed(1)} min</p>
+        </div>`);
+    });
+    
+    heatLayer.addTo(map);
+}
+
+// UI Updates
+function clearMap() {
+    if (routeLayer) {
+        routeLayer.clearLayers();
+    }
+    
+    if (heatLayer && map.hasLayer(heatLayer)) {
+        map.removeLayer(heatLayer);
+    }
+    
+    startMarker = null;
+    endMarker = null;
+    routeLine = null;
+}
+
+function showLoading() {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        loadingElement.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+        loadingElement.style.display = 'none';
+    }
+}
+
+function showError(message) {
+    const errorElement = document.getElementById('error-message');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+        
+        setTimeout(() => {
+            errorElement.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function updateThemeColors() {
+    const colors = getThemeColors();
+    
+    document.documentElement.style.setProperty('--accent-color', colors.accent);
+    document.documentElement.style.setProperty('--bg-color', colors.background);
+    document.documentElement.style.setProperty('--text-color', colors.text);
+    
+    const calculateBtn = document.getElementById('calculate-route');
+    if (calculateBtn) {
+        calculateBtn.style.backgroundColor = colors.accent;
+        calculateBtn.style.color = currentTheme === 'dark' ? '#121212' : '#FFFFFF';
+    }
+}
+
+// Route information
+function updateRouteInfo(routeData, weatherData) {
+    const infoPanel = document.getElementById('route-info');
+    if (!infoPanel) return;
+    
+    // Make the route info panel visible
+    infoPanel.style.display = 'block';
+    
+    // Update distance
+    const distanceEl = document.getElementById('distance');
+    if (distanceEl) {
+        distanceEl.textContent = routeData.distance_miles ? routeData.distance_miles + ' mi' : '-';
+    }
+    
+    // Update duration
+    const durationEl = document.getElementById('duration');
+    if (durationEl) {
+        const hours = Math.floor(routeData.estimated_travel_time / 60);
+        const minutes = Math.round(routeData.estimated_travel_time % 60);
+        let timeDisplay = '';
+        if (hours > 0) {
+            timeDisplay = `${hours}h ${minutes}m`;
+        } else {
+            timeDisplay = `${minutes} min`;
+        }
+        durationEl.textContent = timeDisplay;
+    }
+    
+    // Update congestion delay
+    const delayEl = document.getElementById('congestion-delay');
+    if (delayEl) {
+        const delay = Math.round(routeData.congestion_delay);
+        delayEl.textContent = delay + ' min';
+    }
+    
+    // Update base duration
+    const baseDurationEl = document.getElementById('base-duration');
+    if (baseDurationEl) {
+        const baseDuration = Math.round(routeData.base_travel_time);
+        baseDurationEl.textContent = baseDuration + ' min';
+    }
+    
+    // Update weather condition
+    const weatherEl = document.getElementById('weather-condition');
+    if (weatherEl && weatherData && weatherData.weather) {
+        weatherEl.textContent = weatherData.weather.Conditions || '-';
+    }
+}
+
+// Weather data
+function getWeatherData() {
+    return fetch('/api/weather')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const weather = data.weather;
+                const formattedWeather = {
+                    Temperature: weather['Temperature(F)'],
+                    WindSpeed: weather['WindSpeed(mph)'],
+                    Conditions: weather['Weather_Conditions'],
+                    Humidity: weather['Humidity(%)'],
+                    Visibility: weather['Visibility(mi)'],
+                    Precipitation: weather['Precipitation(in)']
+                };
+                return { weather: formattedWeather };
+            } else {
+                throw new Error(data.error || "Failed to fetch weather data");
+            }
+        });
+}
