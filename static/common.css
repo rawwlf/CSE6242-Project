@@ -1,10 +1,48 @@
+/* CSS Variables for theming */
+:root {
+    /* Dark theme variables (default) */
+    --bg-color: #121212;
+    --text-color: #F0F0F0;
+    --nav-bg: #1E1E1E;
+    --card-bg: #252525;
+    --input-bg: #333333;
+    --input-text: #FFFFFF;
+    --accent-color: #FFCC00; /* Night mode yellow */
+    --accent-color-rgb: 255, 204, 0;
+    --button-text: #121212; /* Dark text on yellow button */
+    --active-bg: #FFCC00;
+    --hover-bg: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --key-stat-color: var(--accent-color); /* Yellow for stats in dark mode */
+}
+
+/* Light theme variables */
+html.light-mode {
+    --bg-color: #FFFFFF;
+    --text-color: #333333;
+    --nav-bg: #F5F5F5;
+    --card-bg: #FFFFFF;
+    --input-bg: #EEEEEE;
+    --input-text: #333333;
+    --accent-color: #10B981; /* Day mode green */
+    --accent-color-rgb: 16, 185, 129;
+    --button-text: #FFFFFF; /* White text on green button */
+    --active-bg: #10B981;
+    --hover-bg: #E0E0E0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --key-stat-color: var(--accent-color); /* Green for stats in light mode */
+}
+
 /* Reset and common styles */
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
 }
 
 /* Common form styling */
@@ -14,50 +52,68 @@ html, body {
 
 label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
 }
 
 input, select {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
     box-sizing: border-box;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    transition: box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-color), 0.5);
 }
 
 button, .button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
+    background-color: var(--accent-color);
+    color: var(--button-text);
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    font-weight: 500;
     text-align: center;
     text-decoration: none;
     display: inline-block;
+    transition: background-color 0.2s, transform 0.1s;
 }
 
 button:hover, .button:hover {
-    background-color: #45a049;
+    background-color: var(--accent-color);
+    opacity: 0.9;
+}
+
+button:active, .button:active {
+    transform: translateY(1px);
 }
 
 /* Card styling */
 .card {
-    background: white;
-    border-radius: 5px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 0 20px var(--shadow-color);
     padding: 20px;
     margin-bottom: 20px;
 }
 
 /* Panel styling */
 .panel {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px var(--shadow-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Utility classes */
@@ -94,5 +150,20 @@ button:hover, .button:hover {
     top: 20px;
     right: 20px;
     z-index: 900;
-    width: 300px;
+    width: 320px;
+}
+
+/* Accent color */
+.accent {
+    color: var(--accent-color);
+}
+
+.bg-accent {
+    background-color: var(--accent-color);
+    color: var(--button-text);
+}
+
+/* Ensure key stats use the theme accent color */
+.stat-value {
+    color: var(--key-stat-color);
 }
