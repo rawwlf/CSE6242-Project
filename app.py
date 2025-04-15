@@ -155,13 +155,12 @@ def calculate_edge_weights(G, model, current_weather, X_columns, force_recalcula
     t_start = time.time()
     
     now = route_datetime if route_datetime else datetime.now()
-    time_key = get_time_key(now)
     
-    edge_weights_path = f'static/models/edge_weights_{time_key}.pkl'
+    edge_weights_path = f'static/models/edge_weights.pkl'
     
     if os.path.exists(edge_weights_path) and not force_recalculate:
         try:
-            print(f"Loading cached edge weights for {time_key}...")
+            print(f"Loading cached edge weights...")
             with open(edge_weights_path, 'rb') as f:
                 edge_weights = pickle.load(f)
                 
@@ -181,7 +180,7 @@ def calculate_edge_weights(G, model, current_weather, X_columns, force_recalcula
     else:
         PERF_STATS['cache_misses'] += 1
     
-    print(f"Calculating edge weights for {time_key} (this may take some time)...")
+    print(f"Calculating edge weights (this may take some time)...")
     
     edge_weights = []
     for u, v, key, data in G.edges(keys=True, data=True):
@@ -279,12 +278,10 @@ def find_optimal_route(start_location, end_location, G, route_datetime=None):
             u, v = route[i], route[i + 1]
             
             edge_data = None
-            min_key = None
             
             for key in G[u][v]:
                 if edge_data is None or G[u][v][key]['weight'] < edge_data['weight']:
                     edge_data = G[u][v][key]
-                    min_key = key
             
             if edge_data:
                 distance_mi = edge_data.get('length', 0) / 1609.34
@@ -580,8 +577,7 @@ def calculate_route():
                 route_datetime = datetime(year, month, day, hour, minute)
                 print(f"Using datetime: {route_datetime}")
                 
-                time_key = get_time_key(route_datetime)
-                date_specific_cache = f'static/models/edge_weights_{time_key}.pkl'
+                date_specific_cache = f'static/models/edge_weights.pkl'
                 
                 weather = fetch_current_weather_nyc()
                 if weather:
@@ -591,9 +587,9 @@ def calculate_route():
                     force_recalc = not os.path.exists(date_specific_cache)
                     
                     if force_recalc:
-                        print(f"No cached weights found for {time_key}, calculating...")
+                        print(f"No cached weights found, calculating...")
                     else:
-                        print(f"Using cached weights for {time_key}")
+                        print(f"Using cached weights")
                         
                     calculate_edge_weights(request_graph, MODEL, weather, X_COLUMNS, 
                                           force_recalculate=force_recalc, 
