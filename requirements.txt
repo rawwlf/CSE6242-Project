@@ -3,11 +3,24 @@ flask
 
 # Data handling
 pandas
+numpy
 
-# Mapping and visualization
+# Machine learning
+lightgbm
+scikit-learn
+
+# Maps and routing
+osmnx
+networkx
 folium
 jenkspy
-# AWS integration
+# API calls
+requests
+
+# S3 access
 boto3
 botocore
 s3fs
+
+# Other utilities
+pickle5

@@ -30,19 +30,11 @@
     </div>
 
     <div class="form-group">
-        <label for="weather-select">Weather Condition:</label>
-        <select id="weather-select">
-            <option value="clear">Clear</option>
-            <option value="rain">Rain</option>
-            <option value="snow">Snow</option>
-            <option value="fog">Fog</option>
-        </select>
-    </div>
-
-    <div class="form-group">
         <label for="time-select">Depart at:</label>
-        <input type="date" id="date-select" class="datetime-input">
-        <input type="time" id="time-select" value="08:00">
+        <div style="display: flex; gap: 10px;">
+            <input type="date" id="date-select" class="datetime-input" min="2016-01-01" max="2022-12-31">
+            <input type="time" id="time-select" class="datetime-input" value="08:00">
+        </div>
     </div>
 
     <div class="form-group">
@@ -68,11 +60,45 @@
 
     <button id="calculate-route">Calculate Route</button>
 
-    <div id="route-info" class="route-info" style="display: none;">
+    <div id="route-info" style="display: none;">
         <h3>Route Summary</h3>
-        <p><strong>Distance:</strong> <span id="distance">-</span> miles</p>
-        <p><strong>Duration:</strong> <span id="duration">-</span> minutes</p>
-        <p><strong>Weather Impact:</strong> <span id="weather-impact">-</span>%</p>
+        
+        <!-- Key metrics displayed more prominently -->
+        <div class="metric-group">
+            <div class="key-stat">
+                <div class="stat-value" id="distance">-</div>
+                <div class="stat-label">Distance</div>
+            </div>
+            <div class="key-stat">
+                <div class="stat-value" id="duration">-</div>
+                <div class="stat-label">Duration</div>
+            </div>
+        </div>
+        
+        <!-- Additional info -->
+        <div class="route-detail">
+            <div class="detail-icon">⏱️</div>
+            <div class="detail-text">
+                <div class="detail-label">Added Delay</div>
+                <div class="detail-value" id="congestion-delay">-</div>
+            </div>
+        </div>
+        
+        <div class="route-detail">
+            <div class="detail-icon">🚦</div>
+            <div class="detail-text">
+                <div class="detail-label">Normal Duration</div>
+                <div class="detail-value" id="base-duration">-</div>
+            </div>
+        </div>
+        
+        <div class="route-detail">
+            <div class="detail-icon">🌤️</div>
+            <div class="detail-text">
+                <div class="detail-label">Weather</div>
+                <div class="detail-value" id="weather-condition">-</div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
