@@ -6,7 +6,7 @@ pandas
 
 # Mapping and visualization
 folium
-
+jenkspy
 # AWS integration
 boto3
 botocore

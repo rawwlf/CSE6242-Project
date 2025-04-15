@@ -25,6 +25,8 @@ let startMarker = null;
 let endMarker = null;
 let heatLayer = null;
 
+const incidentLayerGroup = L.layerGroup().addTo(map);
+
 // Add layer control
 const baseLayers = {
     "Light Mode": lightLayer,
@@ -225,4 +227,98 @@ document.getElementById('calculate-route').addEventListener('click', function() 
             button.textContent = 'Calculate Route';
         });
         //******************************************************* END ******************************************************
+});
+
+
+
+
+// Real time traffic with tom tom 
+
+const tomtom_key = 'dxMYB1Al4a8PQe5hdMYriseUZWnxP36t';
+
+const ic = {
+    0: 'Unknown',
+    1: 'Accident',
+    2: 'Fog',
+    3: 'Dangerous Conditions',
+    4: 'Rain',
+    5: 'Ice',
+    6: 'Jam',
+    7: 'Lane Closed',
+    8: 'Road Closed',
+    9: 'Road Works',
+    10: 'Wind',
+    11: 'Flooding',
+    12: 'Detour',
+    13: 'Cluster',
+    14: 'Broken Down Vehicle'
+};
+
+const ty = {
+    0: ['Unknown', 'rgba(0,0,0,0.25)'],
+    1: ['Minor', 'rgba(0,153,0,0.25)'],
+    2: ['Moderate', 'rgba(255,102,0,0.25)'],
+    3: ['Major', 'rgba(255,0,0,0.25)'],
+    4: ['Undefined', 'rgba(102,204,255,0.25)']
+};
+
+function getIncidents(bounds) {
+    const boundsArr = [bounds.getSouthWest().lat, bounds.getSouthWest().lng, bounds.getNorthEast().lat, bounds.getNorthEast().lng];
+    const query = `https://api.tomtom.com/traffic/services/4/incidentDetails/s3/${boundsArr.join()}/13/-1/json?projection=EPSG4326&key=${tomtom_key}`;
+
+    fetch(query)
+        .then(response => response.json())
+        .then(data => renderIncidents(data.tm.poi))
+        .catch(error => console.error('Error fetching traffic incidents:', error));
+}
+
+function renderIncidents(data) {
+    incidentLayerGroup.clearLayers(); 
+    const selectedType = document.getElementById('incident-filter').value;
+
+
+    data.forEach(item => {
+        if (item.p && item.p.y !== undefined && item.p.x !== undefined) {
+            if (selectedType !="all" && item.ic.toString() != selectedType) return;
+            const lat = item.p.y;
+            const lon = item.p.x;
+
+            const incidentType = ic[item.ic] || 'Unknown';
+            const severity = ty[item.ty] || ['Unknown', 'rgba(0,0,0,0.25)'];
+            const description = item.d || 'No description provided';
+
+            const pinIcon = L.divIcon({
+                className: 'custom-pin',
+                html: `<div style="
+                    background: ${severity[1]};
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    box-shadow: 0 0 3px #000;
+                    border: 1px solid black;
+                "></div>`,
+                iconSize: [16, 16],
+                iconAnchor: [8, 16]
+            });
+
+            L.marker([lat, lon], { icon: pinIcon })
+                .addTo(incidentLayerGroup)
+                .bindPopup(`
+                    <b>Type:</b> ${incidentType}<br>
+                    <b>Description:</b> ${description}<br>
+                    <b>Severity:</b> ${severity[0]}
+                `);
+        } 
+    });
+}
+
+
+
+map.on('moveend', () => {
+    getIncidents(map.getBounds());
+});
+
+document.getElementById('incident-filter').addEventListener('change',() => {
+    getIncidents(map.getBounds());
 });
