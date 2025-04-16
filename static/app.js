@@ -33,7 +33,7 @@ let incidentLayerGroup;
 function initMap() {
     routeLayer = L.layerGroup();
     
-    map = L.map('map').setView([40.7128, -74.0060], 12);
+    map = L.map('map').setView([40.74, -73.98], 13);
 
     // lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
