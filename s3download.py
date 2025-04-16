@@ -50,3 +50,7 @@ def download_from_s3():
         
     except Exception as e:
         print(f"Failed to download {key}: {e}")
+
+
+if __name__ == "__main__":
+    download_from_s3()
