@@ -711,10 +711,10 @@ if __name__ == '__main__':
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
     print(f"\nServer accessible at:")
-    print(f"- Local URL: http://127.0.0.1:5001")
-    print(f"- Network URL: http://{ip_address}:5001")
+    print(f"- Local URL: http://127.0.0.1:5000")
+    print(f"- Network URL: http://{ip_address}:5000")
     print(f"Open one of these URLs in your browser to access the application.")
     print("="*50)
     
     print("Starting Flask application via app.py...")
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)
