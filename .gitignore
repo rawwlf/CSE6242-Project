@@ -2,3 +2,4 @@ cache/
 static/models/
 static/data/
 __pycache__/
+venv/
