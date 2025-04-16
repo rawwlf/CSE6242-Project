@@ -35,10 +35,10 @@ function initMap() {
     
     map = L.map('map').setView([40.74, -73.98], 13);
 
-    // lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    //     maxZoom: 19
-    // });
+    lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 19
+    });
 
     darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -51,7 +51,8 @@ function initMap() {
     // });
 
     baseLayers = {
-        "Dark": darkLayer
+        "Dark": darkLayer,
+        "Light": lightLayer
     };
 
     applyTheme();
@@ -59,13 +60,14 @@ function initMap() {
     
     incidentLayerGroup = L.layerGroup().addTo(map);
 
-    // L.control.layers(baseLayers).addTo(map);
+    L.control.layers(baseLayers).addTo(map);
+
 }
 
 // Theme handling
 function applyTheme() {
     document.documentElement.className = currentTheme + '-mode';
-    updateMapBaseLayer();
+    updateMapBaseLayer(currentTheme);
     
     updateThemeColors();
     
@@ -114,13 +116,13 @@ function updateMapBaseLayer(theme) {
 
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
-    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    if (savedTheme === 'light' || (!savedTheme && !prefersDarkMode)) {
+    if (savedTheme === 'light') {
         document.documentElement.classList.add('light-mode');
         currentTheme = 'light';
         updateMapBaseLayer('light');
-    } else {
+    } else if(!savedTheme){
         document.documentElement.classList.remove('light-mode');
         currentTheme = 'dark';
         updateMapBaseLayer('dark');
@@ -150,6 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
     initMap();
     setDefaultDate();
     initializeTheme();
+
+    map.on('baselayerchange', function(e) {
+        if (e.name === 'Dark') {
+            currentTheme = 'dark';
+        } else if (e.name === 'Light') {
+            currentTheme = 'light';
+        }
+        applyTheme();
+    });
 
     map.on('moveend', () => {
         getIncidents(map.getBounds());
