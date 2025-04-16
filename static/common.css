@@ -1,38 +1,3 @@
-/* CSS Variables for theming */
-:root {
-    /* Dark theme variables (default) */
-    --bg-color: #121212;
-    --text-color: #F0F0F0;
-    --nav-bg: #1E1E1E;
-    --card-bg: #252525;
-    --input-bg: #333333;
-    --input-text: #FFFFFF;
-    --accent-color: #FFCC00; /* Night mode yellow */
-    --accent-color-rgb: 255, 204, 0;
-    --button-text: #121212; /* Dark text on yellow button */
-    --active-bg: #FFCC00;
-    --hover-bg: #333333;
-    --shadow-color: rgba(0, 0, 0, 0.3);
-    --key-stat-color: var(--accent-color); /* Yellow for stats in dark mode */
-}
-
-/* Light theme variables */
-html.light-mode {
-    --bg-color: #FFFFFF;
-    --text-color: #333333;
-    --nav-bg: #F5F5F5;
-    --card-bg: #FFFFFF;
-    --input-bg: #EEEEEE;
-    --input-text: #333333;
-    --accent-color: #10B981; /* Day mode green */
-    --accent-color-rgb: 16, 185, 129;
-    --button-text: #FFFFFF; /* White text on green button */
-    --active-bg: #10B981;
-    --hover-bg: #E0E0E0;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --key-stat-color: var(--accent-color); /* Green for stats in light mode */
-}
-
 /* Reset and common styles */
 html, body {
     margin: 0;
@@ -57,7 +22,7 @@ label {
     color: var(--text-color);
 }
 
-input, select {
+input {
     width: 100%;
     padding: 12px;
     border: none;
@@ -68,12 +33,12 @@ input, select {
     transition: box-shadow 0.2s;
 }
 
-input:focus, select:focus {
+input:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(var(--accent-color), 0.5);
 }
 
-button, .button {
+button {
     background-color: var(--accent-color);
     color: var(--button-text);
     padding: 12px 20px;
@@ -91,6 +56,11 @@ button, .button {
 button:hover, .button:hover {
     background-color: var(--accent-color);
     opacity: 0.9;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
 }
 
 button:active, .button:active {
@@ -137,13 +107,6 @@ button:active, .button:active {
     margin-top: 20px;
 }
 
-/* Responsive container */
-.container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
 /* Control panel styling */
 .control-panel {
     position: absolute;
@@ -151,19 +114,4 @@ button:active, .button:active {
     right: 20px;
     z-index: 900;
     width: 320px;
-}
-
-/* Accent color */
-.accent {
-    color: var(--accent-color);
-}
-
-.bg-accent {
-    background-color: var(--accent-color);
-    color: var(--button-text);
-}
-
-/* Ensure key stats use the theme accent color */
-.stat-value {
-    color: var(--key-stat-color);
 }

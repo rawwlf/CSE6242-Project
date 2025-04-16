@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block additional_css %}
+<style>
+    .year-selector {
+        position: absolute;
+        top: 75px;
+        left: 60px;
+        z-index: 900;
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="map"></div>
+<div class="year-selector panel">
+    <form method="GET" action="/data">
+        <label for="year">Select Year:</label>
+        <select name="year" id="year" onchange="this.form.submit()">
+            {% for year in years %}
+            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                {{ year }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+<script>
+    const state_year_data = "{{ url_for('static', filename='data/state_year_data.csv') }}";
+    const location_counts = "{{ url_for('static', filename='data/filtered_location_counts.csv') }}";
+    const us_states = "{{ url_for('static', filename='data/us-states.json') }}";;
+
+    // Load and parse the data
+    Promise.all([
+        fetch(state_year_data).then(res => res.text()).then(d3.csvParse),
+        fetch(location_counts).then(res => res.text()).then(d3.csvParse),
+        fetch(us_states).then(res => res.json())
+    ])
+    .then(([state_year_data, location_counts, us_states]) => {
+    
+        // Create a lookup map for state values based on the selected year
+        const selectedYear = '{{ selected_year }}';
+        const stateValues = new Map();
+        state_year_data.forEach(d => {
+            if (d.Start_Year === selectedYear) {  // Changed from d.year to d.Start_Year
+                stateValues.set(d.code, +d.Count); // Changed from d.count to d.Count
+            }
+        });
+
+        const values = Array.from(stateValues.values());
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        
+        // Create color scale using natural breaks (7 classes)
+        const breaks = chroma.limits(values, 'q', 7);
+        const colorScale = chroma.scale(['#FFEDA0', '#800026'])
+            .classes(breaks)
+            .mode('lab');
+        
+        var map = L.map('map').setView([37.8, -96], 4.5);
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 17,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          }).addTo(map);
+    
+          // ----- Choropleth Layer Setup -----
+        function getColor(d) {
+            if (d === 0) return '#F0F0F0'; // Special color for no data
+            return colorScale(d).hex();
+        }
+
+        console.log(stateValues)
+        // Apply style to each feature in the GeoJSON
+        function style(feature) {
+            const value = stateValues.get(feature.properties.STATE) || 0;
+            return {
+                fillColor: getColor(value),
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7
+            };
+        }
+    
+        // Create the choropleth layer and add popups
+        var choroplethLayer = L.geoJson(us_states, {
+        style: style,
+        onEachFeature: function(feature, layer) {
+            const value = stateValues.get(feature.properties.STATE) || 0;
+            layer.bindPopup(
+            `<strong>${feature.properties.NAME}</strong><br>` +
+            `Incidents: ${value}`
+            );}
+        }).addTo(map);
+
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            // Add CSS styles inline for the legend
+            div.style.backgroundColor = 'white';
+            div.style.padding = '6px 8px';
+            div.style.border = '1px solid #ccc';
+            div.style.borderRadius = '5px';
+            
+            // Add legend title
+            div.innerHTML = '<h4 style="margin:0 0 5px 0">Incidents per State</h4>';
+            
+            // Add colored boxes for each break
+            breaks.forEach((break_value, i) => {
+                if (i < breaks.length - 1) {
+                    div.innerHTML +=
+                        '<i style="background:' + colorScale(break_value).hex() + 
+                        '; width:18px; height:18px; float:left; opacity:0.7; margin-right:8px; margin-bottom:5px"></i> ' +
+                        Math.round(break_value) + 
+                        (breaks[i + 1] ? '&ndash;' + Math.round(breaks[i + 1]) + '<br>' : '+') +
+                        '<div style="clear:both"></div>';
+                }
+            });
+            
+            return div;
+        };
+
+        // Add legend when choropleth is selected, remove when deselected
+        map.on('overlayadd', function(eventLayer) {
+            if (eventLayer.name === 'Choropleth') {
+                legend.addTo(map);
+            }
+        });
+
+        map.on('overlayremove', function(eventLayer) {
+            if (eventLayer.name === 'Choropleth') {
+                map.removeControl(legend);
+            }
+        });
+
+        // Initially add legend if choropleth is visible by default
+        legend.addTo(map);
+    
+          // ----- Heatmap Layer Setup -----
+          var heatArray = location_counts
+            .filter(d => d.Start_Year === selectedYear)
+            .map(d => [
+                parseFloat(d.Start_Lat), 
+                parseFloat(d.Start_Lng), 
+                parseFloat(d.Count) || 1  // default weight to 1 if not provided
+          ]);
+    
+          // Create the heatmap layer with desired options and add it to the map.
+          var heat = L.heatLayer(heatArray, {
+            radius: 25,
+            blur: 15,
+            maxZoom: 17,
+          });
+
+
+        // ----- Layer Control Setup -----
+        // Create a control for the layers
+        var overlayMaps = {
+            "Choropleth": choroplethLayer,
+            "Heatmap": heat
+        };
+        var layerControl = L.control.layers(null, overlayMaps, { collapsed: false }).addTo(map);
+        
+    })
+    .catch(error => {
+        console.error('Error loading files:', error);
+    });
+</script>
+
+{% endblock %}

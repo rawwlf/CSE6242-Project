@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import os
-import sys
 import time
 import hashlib
 from datetime import datetime
 import pickle
 import pandas as pd
-import numpy as np
 import json
 import requests
 import lightgbm as lgb
@@ -14,8 +12,7 @@ from flask import Flask, render_template, jsonify, request
 import osmnx as ox
 import networkx as nx
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from scipy.spatial import cKDTree
+from s3download import download_from_s3
 
 # Flask app setup
 app = Flask(__name__)
@@ -449,6 +446,8 @@ def initialize():
     print("Initializing application...")
     try:
         t_start = time.time()
+
+        download_from_s3();
         
         MODEL, X_COLUMNS = load_or_train_model()
         print("Model loaded/trained.")
@@ -522,6 +521,15 @@ def index():
     if not INITIALIZATION_COMPLETE:
         return "Application is initializing, please wait...", 503
     return render_template('map.html')
+
+@app.route('/data')
+def get_data():
+    """data viz page"""
+    year = int(request.args.get('year', 2022))
+    years = [2016,2017,2018,2019,2020,2021,2022]
+    return render_template('data_viz.html',
+                           years=years,
+                           selected_year=year)
 
 @app.route('/api/weather', methods=['GET'])
 def get_weather():

@@ -1,8 +1,37 @@
-/* Map specific styles */
-#map {
-    height: 100%;
-    width: 100%;
+/* Base Theme Variables */
+:root {
+    /* Dark Theme Colors (Default) */
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #292929;
+    --bg-overlay: rgba(20, 20, 20, 0.9);
+    --bg-tooltip: #2a2a2a;
+    
+    --text-primary: #FFFFFF;
+    --text-secondary: #AAAAAA;
+    --text-disabled: #777777;
+    
+    --accent-primary: #FFCC00;
+    --accent-primary-rgb: 255, 204, 0;
+    --accent-secondary: #FFEB3B;
+    --accent-secondary-rgb: 255, 235, 59;
+    
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    
+    --success-color: #4CAF50;
+    --warning-color: #FF9800;
+    --error-color: #ff4d4d;
+    
+    --tooltip-text: #FFFFFF;
+    --tooltip-bg: rgba(40, 40, 40, 0.95);
+    --tooltip-border: rgba(70, 70, 70, 0.9);
+    
+    /* Animation */
+    --transition-speed: 0.3s;
 }
+
+/* Map specific styles */
 
 #control-panel {
     position: absolute;
@@ -16,6 +45,17 @@
     width: 360px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+/* Layer control styling */
+.leaflet-control-zoom a {
+    background-color: var(--bg-overlay) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background-color: var(--bg-tertiary) !important;
 }
 
 .route-info {

@@ -56,7 +56,8 @@ function initMap() {
 
     applyTheme();
     routeLayer.addTo(map);
-    L.control.layers(baseLayers).addTo(map);
+    
+    // L.control.layers(baseLayers).addTo(map);
 }
 
 // Theme handling

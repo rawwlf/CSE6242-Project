@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NYC Traffic Prediction{% endblock %}</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- load leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
-    <!-- Font Awesome for icons -->
+    <!-- Load CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Common CSS -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='common.css') }}">
     
     <!-- Page-specific CSS -->
@@ -73,33 +73,6 @@
             color: #1B1B1B;
         }
 
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--accent-color);
-            cursor: pointer;
-            color: var(--text-color);
-            padding: 10px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 15px;
-            transition: all 0.3s ease;
-            background-color: var(--card-bg);
-            width: 40px;
-            height: 40px;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--accent-color);
-            color: var(--button-text);
-            transform: scale(1.05);
-        }
-        
-        .light-icon, .dark-icon {
-            font-size: 20px;
-        }
-        
         .main-content {
             padding-top: 60px; /* Make room for fixed navbar */
             height: calc(100vh - 60px);
@@ -122,10 +95,8 @@
         <div class="nav-container">
             <a href="/" class="site-title">Traffic Congestion Analysis</a>
             <div class="nav-links">
-                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-                    <i class="fas fa-sun light-icon"></i>
-                    <i class="fas fa-moon dark-icon"></i>
-                </button>
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Route Planner</a>
+                <a href="/data" class="nav-link {% if request.path == '/data' %}active{% endif %}">Data Viz</a>
             </div>
         </div>
     </nav>
@@ -134,43 +105,6 @@
     <div class="main-content">
         {% block content %}{% endblock %}
     </div>
-    
-    <!-- Common JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const htmlElement = document.documentElement;
-            
-            // Check for saved theme preference or use system preference
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (savedTheme === 'light') {
-                htmlElement.classList.add('light-mode');
-            } else if (savedTheme === 'dark') {
-                htmlElement.classList.remove('light-mode');
-            } else if (prefersDark) {
-                htmlElement.classList.remove('light-mode');
-            } else {
-                htmlElement.classList.add('light-mode');
-            }
-            
-            // Toggle theme when button is clicked
-            themeToggle.addEventListener('click', function() {
-                htmlElement.classList.toggle('light-mode');
-                
-                // Save preference to localStorage
-                if (htmlElement.classList.contains('light-mode')) {
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    localStorage.setItem('theme', 'dark');
-                }
-                
-                // Dispatch custom event for other scripts to listen for
-                window.dispatchEvent(new Event('themechange'));
-            });
-        });
-    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
