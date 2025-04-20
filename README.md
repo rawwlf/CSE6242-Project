@@ -1,6 +1,8 @@
 # Traffic Congestion Analysis Project
 
-This project provides tools for analyzing traffic congestion patterns and planning routes.
+This project provides tools for analyzing traffic patterns and planning optimized routes. It is a web-based application built using Flask for the backend and Leaflet.js for interactive map visualizations on the frontend. The project integrates various features, including route planning, real-time traffic visualization, heatmaps, and choropleth maps, to provide users with insights into traffic congestion and weather conditions.
+
+The frontend is heavily focused on map-based interactivity, with features like dynamic layer switching, incident filtering, and route visualization. The map is initialized using Leaflet.js, with multiple layers such as heatmaps for congestion and choropleth layers for state-level data. The application also includes a control panel for user inputs like start and end locations, departure time, and incident type filtering. The backend fetches data from APIs and S3 buckets, processes it, and serves it to the frontend. 
 
 ## Setup Instructions
 
